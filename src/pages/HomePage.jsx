@@ -82,18 +82,22 @@ export default function HomePage({ profile }) {
     },
   ];
   const [activeStarId, setActiveStarId] = useState(constellationStars[0].id);
-  const [revealedStars, setRevealedStars] = useState([constellationStars[0].id]);
+  const [revealedStars, setRevealedStars] = useState([
+    constellationStars[0].id,
+  ]);
   const activeStar =
     constellationStars.find((star) => star.id === activeStarId) ??
     constellationStars[0];
   const revealProgress = Math.round(
-    (revealedStars.length / constellationStars.length) * 100
+    (revealedStars.length / constellationStars.length) * 100,
   );
   const allStarsRevealed = revealedStars.length === constellationStars.length;
 
   const handleStarReveal = (star) => {
     setActiveStarId(star.id);
-    setRevealedStars((prev) => (prev.includes(star.id) ? prev : [...prev, star.id]));
+    setRevealedStars((prev) =>
+      prev.includes(star.id) ? prev : [...prev, star.id],
+    );
   };
   const floatingPetals = useMemo(
     () =>
@@ -104,7 +108,7 @@ export default function HomePage({ profile }) {
         duration: `${8 + Math.random() * 8}s`,
         size: `${9 + Math.random() * 10}px`,
       })),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -137,6 +141,12 @@ export default function HomePage({ profile }) {
           <p className="tracking-love text-xs uppercase text-[#914228]">
             A Birthday Gift For {profile.partnerName}
           </p>
+
+          <h1 className="font-script mt-5 text-5xl leading-[0.9] text-[#6a2414] sm:text-7xl md:text-8xl">
+            Happy Birthday,
+            <br />
+            {profile.partnerNickname}
+          </h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="home-heartbeat-badge rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
@@ -186,12 +196,6 @@ export default function HomePage({ profile }) {
               </article>
             </div>
           </div>
-
-          <h1 className="font-script mt-5 text-5xl leading-[0.9] text-[#6a2414] sm:text-7xl md:text-8xl">
-            Happy Birthday,
-            <br />
-            {profile.partnerNickname}
-          </h1>
 
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6f3e31] sm:text-base">
             A minimal love letter, made just for her.

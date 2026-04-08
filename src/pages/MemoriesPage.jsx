@@ -88,7 +88,7 @@ export default function MemoriesPage({ frames }) {
         <div className="relative z-10 mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
           {frames.map((frame, idx) => (
             <article
-              key={frame.title}
+              key={frame.id || frame.title}
               className="memory-photo-card group rounded-[1.5rem] p-4"
               style={{
                 animationDelay: `${idx * 120}ms`,
@@ -96,15 +96,26 @@ export default function MemoriesPage({ frames }) {
               }}
             >
               <div className="memory-photo-slot relative h-48 overflow-hidden rounded-[1.1rem] p-4 sm:h-52">
-                <p className="w-fit rounded-full bg-white/84 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#a04e31]">
-                  Slot {String(idx + 1).padStart(2, "0")}
-                </p>
-                <p className="absolute bottom-4 right-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#8d4b36]">
-                  Add Photo
-                </p>
-                <p className="memory-slot-caption absolute inset-x-3 bottom-3 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.17em]">
-                  Hold this moment forever
-                </p>
+                {frame.imageUrl ? (
+                  <img
+                    src={frame.imageUrl}
+                    alt={frame.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : null}
+
+                <div className="relative z-10">
+                  <p className="w-fit rounded-full bg-white/84 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#a04e31]">
+                    Slot {String(idx + 1).padStart(2, "0")}
+                  </p>
+                  <p className="absolute bottom-4 right-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#8d4b36]">
+                    {frame.imageUrl ? "Photo Added" : "Add Photo"}
+                  </p>
+                  <p className="memory-slot-caption absolute inset-x-3 bottom-3 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.17em]">
+                    {frame.caption || "Hold this moment forever"}
+                  </p>
+                </div>
               </div>
 
               <div className="mt-4">
@@ -112,11 +123,13 @@ export default function MemoriesPage({ frames }) {
                   {frameCaptions[idx % frameCaptions.length]}
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-[#662718]">
-                  {frame.title}
+                  {frame.title || `Memory ${idx + 1}`}
                 </h3>
-                <p className="mt-2 text-sm text-[#744538]">{frame.vibe}</p>
+                <p className="mt-2 text-sm text-[#744538]">
+                  {frame.vibe || "Pure us energy"}
+                </p>
                 <p className="mt-3 rounded-lg bg-[#ffe5d8] px-3 py-2 text-xs font-medium text-[#88402a]">
-                  {frame.hint}
+                  {frame.hint || "Add your favorite photo in this frame"}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="memory-tag">

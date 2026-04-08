@@ -16,13 +16,18 @@ const memoryDetails = [
   "Still choosing each other, every day.",
 ];
 
-const heartNotes = [
-  "My heart slowed down when I found you.",
-  "You made ordinary evenings feel magical.",
-  "Your laugh became my favorite place.",
-  "Even silence feels complete with you.",
-  "Every phase with you made us stronger.",
-  "Forever sounds soft and beautiful with you.",
+export const heartNotes = [
+  "That first day, I didn’t know you’d become my whole story.",
+  "Even in silence, my heart kept choosing you.",
+  "Fate wrote something unexpected… and beautiful for us.",
+  "Some bonds restart stronger, and ours proved it.",
+  "That day, friendship turned into something my heart always wanted.",
+  "Loving you daily became my favorite routine.",
+  "Every journey with you feels like a blessing I never asked for but got.",
+  "Even a simple movie night felt like a dream with you.",
+  "Truth wasn’t easy, but loving you was always worth it.",
+  "With you, even a trip became a lifetime memory.",
+  "Your special day… but somehow, you became my biggest gift.",
 ];
 
 function ChapterControls({
@@ -174,8 +179,6 @@ function MemoryCard({
       </p>
 
       <div className="love-chip-strip mt-5 flex flex-wrap gap-2 rounded-xl px-3 py-3">
-        <span className="love-chip">Scene {String(index + 1).padStart(2, "0")}</span>
-        <span className="love-chip">Pure Romance</span>
         <span className="love-chip">Forever Memory</span>
       </div>
 
@@ -203,7 +206,7 @@ function MemoryCard({
   );
 }
 
-export default function JourneyPage({ moments }) {
+export default function JourneyPage({ moments, tracks = journeyChapterMusic }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [unlockedCount, setUnlockedCount] = useState(1);
   const [unlockingIndex, setUnlockingIndex] = useState(null);
@@ -219,12 +222,9 @@ export default function JourneyPage({ moments }) {
   const activeTrackRef = useRef("");
 
   const safeTrackIndex =
-    journeyChapterMusic.length > 0
-      ? Math.min(activeIndex, journeyChapterMusic.length - 1)
-      : -1;
+    tracks.length > 0 ? Math.min(activeIndex, tracks.length - 1) : -1;
 
-  const activeTrack =
-    safeTrackIndex >= 0 ? journeyChapterMusic[safeTrackIndex] : null;
+  const activeTrack = safeTrackIndex >= 0 ? tracks[safeTrackIndex] : null;
 
   const floatingHearts = useMemo(
     () =>
@@ -235,7 +235,7 @@ export default function JourneyPage({ moments }) {
         duration: `${9 + Math.random() * 9}s`,
         size: `${10 + Math.random() * 11}px`,
       })),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -247,7 +247,7 @@ export default function JourneyPage({ moments }) {
 
   useEffect(() => {
     const audio = new Audio();
-    const firstTrack = journeyChapterMusic[0];
+    const firstTrack = tracks[0];
     if (firstTrack?.src) {
       audio.src = firstTrack.src;
       activeTrackRef.current = firstTrack.src;
@@ -287,7 +287,7 @@ export default function JourneyPage({ moments }) {
       audio.removeEventListener("error", handleError);
       audioRef.current = null;
     };
-  }, []);
+  }, [tracks]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -328,14 +328,14 @@ export default function JourneyPage({ moments }) {
         if (!Number.isNaN(idx)) {
           setActiveIndex(idx);
           setVisibleIndices((prev) =>
-            prev.includes(idx) ? prev : [...prev, idx]
+            prev.includes(idx) ? prev : [...prev, idx],
           );
         }
       },
       {
         threshold: [0.3, 0.5, 0.72],
         rootMargin: "-20% 0px -32% 0px",
-      }
+      },
     );
 
     cards.forEach((card) => observer.observe(card));
@@ -367,11 +367,12 @@ export default function JourneyPage({ moments }) {
       setUnlockedCount((prev) => Math.min(prev + 1, moments.length));
       setActiveIndex(nextIdx);
       setVisibleIndices((prev) =>
-        prev.includes(nextIdx) ? prev : [...prev, nextIdx]
+        prev.includes(nextIdx) ? prev : [...prev, nextIdx],
       );
       setUnlockingIndex(null);
       const target = cardRefs.current[nextIdx];
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (target)
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 840);
 
     pulseTimerRef.current = setTimeout(() => {
@@ -387,9 +388,9 @@ export default function JourneyPage({ moments }) {
   const nextMoment = hasNextChapter ? moments[unlockedCount] : null;
 
   const getTrackByIndex = (index) => {
-    if (!journeyChapterMusic.length) return null;
-    const safeIndex = Math.min(Math.max(index, 0), journeyChapterMusic.length - 1);
-    return journeyChapterMusic[safeIndex];
+    if (!tracks.length) return null;
+    const safeIndex = Math.min(Math.max(index, 0), tracks.length - 1);
+    return tracks[safeIndex];
   };
 
   const playTrackAtIndex = async (index) => {
@@ -422,7 +423,9 @@ export default function JourneyPage({ moments }) {
       await audio.play();
     } catch {
       setMusicLoading(false);
-      setMusicError("Play blocked hua. Dobara tap karo ya track URL replace karo.");
+      setMusicError(
+        "Play blocked hua. Dobara tap karo ya track URL replace karo.",
+      );
     }
   };
 
@@ -480,11 +483,7 @@ export default function JourneyPage({ moments }) {
             </span>
             {coupleProfile.partnerName}
           </h2>
-          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6f3e31] sm:text-base">
-            Is journey page ko humne ek animated love diary ki tarah design kiya
-            hai. Har tap ke saath next memory cinematic style me unlock hoti
-            hai, just like a romantic story unfolding chapter by chapter.
-          </p>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6f3e31] sm:text-base"></p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button
@@ -502,7 +501,9 @@ export default function JourneyPage({ moments }) {
                   : "Tap to Play Music"}
             </button>
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#9f563b]">
-              {activeTrack ? `${activeTrack.title} • ${activeMoment?.chapter}` : "No Track"}
+              {activeTrack
+                ? `${activeTrack.title} • ${activeMoment?.chapter}`
+                : "No Track"}
             </p>
             <span
               className={[
@@ -519,7 +520,9 @@ export default function JourneyPage({ moments }) {
           </div>
 
           {musicError && (
-            <p className="mt-2 text-xs font-semibold text-[#9a4024]">{musicError}</p>
+            <p className="mt-2 text-xs font-semibold text-[#9a4024]">
+              {musicError}
+            </p>
           )}
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
