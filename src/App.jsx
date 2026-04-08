@@ -23,11 +23,13 @@ import HomePage from "./pages/HomePage";
 import JourneyPage from "./pages/JourneyPage";
 import MemoriesPage from "./pages/MemoriesPage";
 import ReasonsPage from "./pages/ReasonsPage";
+import SongsPage from "./pages/SongsPage";
 import { auth, db, isFirebaseConfigured } from "./lib/firebase";
 
 const navLinks = [
   { label: "Home", to: "/" },
   { label: "Journey", to: "/journey" },
+  { label: "Songs", to: "/songs" },
   { label: "Reasons", to: "/reasons" },
   { label: "Memories", to: "/memories" },
   { label: "Future", to: "/future" },
@@ -586,6 +588,24 @@ export default function App() {
                       reasons={loveReasons}
                       profile={coupleProfile}
                     />
+                  ) : (
+                    <LockedRoutePage remaining={remaining} />
+                  )}
+                </ProtectedRoutePage>
+              }
+            />
+            <Route
+              path="/songs"
+              element={
+                <ProtectedRoutePage
+                  user={user}
+                  authLoading={authLoading}
+                  isSigningIn={isSigningIn}
+                  onLogin={handleGoogleLogin}
+                  authError={authError}
+                >
+                  {isUnlocked ? (
+                    <SongsPage tracks={songTracks} profile={coupleProfile} />
                   ) : (
                     <LockedRoutePage remaining={remaining} />
                   )}
