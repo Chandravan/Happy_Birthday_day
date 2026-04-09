@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   addDoc,
   collection,
@@ -6,6 +7,7 @@ import {
   doc,
   onSnapshot,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -148,7 +150,11 @@ async function uploadFile(file, folderPath, uid) {
   throw new Error(getFriendlyStorageError(lastError, bucketCandidates));
 }
 
-export default function AdminPanelPage({ user }) {
+export default function AdminPanelPage({ user, mode = "all" }) {
+  const showSongs = mode === "all" || mode === "songs";
+  const showPhotos = mode === "all" || mode === "photos";
+  const isSongsOnly = mode === "songs";
+
   const [songs, setSongs] = useState([]);
   const [photos, setPhotos] = useState([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
@@ -158,8 +164,13 @@ export default function AdminPanelPage({ user }) {
   const [songArtist, setSongArtist] = useState("");
   const [songUrl, setSongUrl] = useState("");
   const [songOrder, setSongOrder] = useState("");
+  const [songPlacement, setSongPlacement] = useState("both");
   const [songFile, setSongFile] = useState(null);
   const [savingSong, setSavingSong] = useState(false);
+  const [editingSongId, setEditingSongId] = useState("");
+  const [editingSongOrder, setEditingSongOrder] = useState("");
+  const [editingSongPlacement, setEditingSongPlacement] = useState("both");
+  const [savingSongSettingsId, setSavingSongSettingsId] = useState("");
 
   const [photoTitle, setPhotoTitle] = useState("");
   const [photoVibe, setPhotoVibe] = useState("");
@@ -181,63 +192,76 @@ export default function AdminPanelPage({ user }) {
       return undefined;
     }
 
-    const songsUnsubscribe = onSnapshot(
-      collection(db, "songs"),
-      (snapshot) => {
-        const mappedSongs = mapWithOrdering(snapshot, (id, data) => ({
-          id,
-          title: data.title || "Untitled Song",
-          artist: data.artist || "",
-          src: data.src || "",
-          storagePath: data.storagePath || "",
-          order: getNumericOrder(data.order),
-          createdAt: data.createdAt?.toMillis?.() || 0,
-        })).filter((song) => Boolean(song.src));
+    let songsUnsubscribe = () => {};
+    let photosUnsubscribe = () => {};
 
-        setSongs(mappedSongs);
-        setLoadingSongs(false);
-      },
-      () => {
-        setLoadingSongs(false);
-        setSongs([]);
-      }
-    );
+    if (showSongs) {
+      songsUnsubscribe = onSnapshot(
+        collection(db, "songs"),
+        (snapshot) => {
+          const mappedSongs = mapWithOrdering(snapshot, (id, data) => ({
+            id,
+            title: data.title || "Untitled Song",
+            artist: data.artist || "",
+            src: data.src || "",
+            storagePath: data.storagePath || "",
+            order: getNumericOrder(data.order),
+            playInJourney: data.playInJourney !== false,
+            createdAt: data.createdAt?.toMillis?.() || 0,
+          })).filter((song) => Boolean(song.src));
 
-    const photosUnsubscribe = onSnapshot(
-      collection(db, "photos"),
-      (snapshot) => {
-        const mappedPhotos = mapWithOrdering(snapshot, (id, data) => ({
-          id,
-          title: data.title || "Memory Frame",
-          vibe: data.vibe || "Pure us energy",
-          hint: data.hint || "Add a special click here",
-          caption: data.caption || "",
-          imageUrl: data.imageUrl || "",
-          storagePath: data.storagePath || "",
-          order: getNumericOrder(data.order),
-          createdAt: data.createdAt?.toMillis?.() || 0,
-        }));
+          setSongs(mappedSongs);
+          setLoadingSongs(false);
+        },
+        () => {
+          setLoadingSongs(false);
+          setSongs([]);
+        }
+      );
+    } else {
+      setLoadingSongs(false);
+    }
 
-        setPhotos(mappedPhotos);
-        setLoadingPhotos(false);
-      },
-      () => {
-        setLoadingPhotos(false);
-        setPhotos([]);
-      }
-    );
+    if (showPhotos) {
+      photosUnsubscribe = onSnapshot(
+        collection(db, "photos"),
+        (snapshot) => {
+          const mappedPhotos = mapWithOrdering(snapshot, (id, data) => ({
+            id,
+            title: data.title || "Memory Frame",
+            vibe: data.vibe || "Pure us energy",
+            hint: data.hint || "Add a special click here",
+            caption: data.caption || "",
+            imageUrl: data.imageUrl || "",
+            storagePath: data.storagePath || "",
+            order: getNumericOrder(data.order),
+            createdAt: data.createdAt?.toMillis?.() || 0,
+          }));
+
+          setPhotos(mappedPhotos);
+          setLoadingPhotos(false);
+        },
+        () => {
+          setLoadingPhotos(false);
+          setPhotos([]);
+        }
+      );
+    } else {
+      setLoadingPhotos(false);
+    }
 
     return () => {
       songsUnsubscribe();
       photosUnsubscribe();
     };
-  }, []);
+  }, [showPhotos, showSongs]);
 
   const clearSongForm = () => {
     setSongTitle("");
     setSongArtist("");
     setSongUrl("");
     setSongOrder("");
+    setSongPlacement("both");
     setSongFile(null);
   };
 
@@ -288,6 +312,7 @@ export default function AdminPanelPage({ user }) {
         artist: songArtist.trim(),
         src: finalSource,
         order: normalizeOrder(songOrder),
+        playInJourney: songPlacement !== "songs_only",
         storagePath,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -378,6 +403,45 @@ export default function AdminPanelPage({ user }) {
     }
   };
 
+  const startEditSongSettings = (song) => {
+    setEditingSongId(song.id);
+    setEditingSongOrder(
+      song.order === FALLBACK_ORDER ? "" : String(song.order)
+    );
+    setEditingSongPlacement(song.playInJourney === false ? "songs_only" : "both");
+    setErrorMessage("");
+    setStatusMessage("");
+  };
+
+  const cancelEditSongSettings = () => {
+    setEditingSongId("");
+    setEditingSongOrder("");
+    setEditingSongPlacement("both");
+  };
+
+  const saveSongSettings = async (songId) => {
+    if (!db) return;
+
+    setSavingSongSettingsId(songId);
+    setErrorMessage("");
+    setStatusMessage("");
+
+    try {
+      await updateDoc(doc(db, "songs", songId), {
+        order: normalizeOrder(editingSongOrder),
+        playInJourney: editingSongPlacement !== "songs_only",
+        updatedAt: serverTimestamp(),
+      });
+
+      cancelEditSongSettings();
+      setStatusMessage("Song settings update ho gayi.");
+    } catch (error) {
+      setErrorMessage(error?.message || "Song settings save nahi ho payi.");
+    } finally {
+      setSavingSongSettingsId("");
+    }
+  };
+
   const deletePhoto = async (photo) => {
     if (!db) return;
     if (!window.confirm(`Delete photo "${photo.title}"?`)) return;
@@ -409,15 +473,35 @@ export default function AdminPanelPage({ user }) {
             Content Control Room
           </p>
           <h2 className="font-script mt-3 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
-            Admin Panel
+            {isSongsOnly ? "Admin Songs" : "Admin Panel"}
           </h2>
           <p className="mt-4 max-w-4xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
-            Yahan se tum songs add kar sakte ho aur memory photos manage kar sakte ho.
-            File upload karoge to Firebase Storage me save hoga, aur URL doge to direct use hoga.
+            {isSongsOnly
+              ? "Is page se tum direct songs add/upload/delete kar sakte ho."
+              : "Yahan se tum songs add kar sakte ho aur memory photos manage kar sakte ho. File upload karoge to Firebase Storage me save hoga, aur URL doge to direct use hoga."}
           </p>
           <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b5238]">
             Logged in as: {user?.email || "Unknown user"}
           </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {mode !== "all" && (
+              <Link
+                to="/admin"
+                className="rounded-full border border-[#d28667] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3f26] transition hover:bg-[#ffe7db]"
+              >
+                Back To Admin
+              </Link>
+            )}
+            {mode !== "songs" && (
+              <Link
+                to="/admin/songs"
+                className="rounded-full border border-[#d28667] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3f26] transition hover:bg-[#ffe7db]"
+              >
+                Open Songs Manager
+              </Link>
+            )}
+          </div>
         </header>
 
         {!isFirebaseConfigured && (
@@ -438,257 +522,341 @@ export default function AdminPanelPage({ user }) {
           </div>
         )}
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-2">
-          <form
-            onSubmit={saveSong}
-            className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5"
-          >
-            <h3 className="text-lg font-semibold text-[#6f2d1d]">Add Song</h3>
-            <p className="mt-1 text-xs text-[#90503b]">URL ya audio file dono support hain.</p>
-
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Song Title
-              <input
-                value={songTitle}
-                onChange={(e) => setSongTitle(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="Chapter 01 Track"
-                required
-              />
-            </label>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Artist (Optional)
-              <input
-                value={songArtist}
-                onChange={(e) => setSongArtist(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="KK"
-              />
-            </label>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Song URL (Optional if file selected)
-              <input
-                value={songUrl}
-                onChange={(e) => setSongUrl(e.target.value)}
-                type="url"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="https://.../song.mp3"
-              />
-            </label>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Display Order (Optional)
-              <input
-                value={songOrder}
-                onChange={(e) => setSongOrder(e.target.value)}
-                type="number"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="1"
-              />
-            </label>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Upload Audio File (Optional)
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => setSongFile(e.target.files?.[0] || null)}
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] file:mr-3 file:rounded-full file:border-0 file:bg-[#ffe3d6] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#8f4027]"
-              />
-            </label>
-
-            <button
-              type="submit"
-              disabled={savingSong}
-              className="mt-5 rounded-full bg-[#bb4e2d] px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#a84325] disabled:cursor-not-allowed disabled:opacity-70"
+        <div className={`mt-6 grid gap-5 ${showSongs && showPhotos ? "lg:grid-cols-2" : ""}`}>
+          {showSongs && (
+            <form
+              onSubmit={saveSong}
+              className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5"
             >
-              {savingSong ? "Saving Song..." : "Save Song"}
-            </button>
-          </form>
+              <h3 className="text-lg font-semibold text-[#6f2d1d]">Add Song</h3>
+              <p className="mt-1 text-xs text-[#90503b]">URL ya audio file dono support hain.</p>
 
-          <form
-            onSubmit={savePhoto}
-            className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5"
-          >
-            <h3 className="text-lg font-semibold text-[#6f2d1d]">Add Photo</h3>
-            <p className="mt-1 text-xs text-[#90503b]">URL ya image upload se gallery update ho jayegi.</p>
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Song Title
+                <input
+                  value={songTitle}
+                  onChange={(e) => setSongTitle(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="Chapter 01 Track"
+                  required
+                />
+              </label>
 
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Photo Title
-              <input
-                value={photoTitle}
-                onChange={(e) => setPhotoTitle(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="Temple Day Smile"
-                required
-              />
-            </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Artist (Optional)
+                <input
+                  value={songArtist}
+                  onChange={(e) => setSongArtist(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="KK"
+                />
+              </label>
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Vibe (Optional)
-              <input
-                value={photoVibe}
-                onChange={(e) => setPhotoVibe(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="Golden Hour"
-              />
-            </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Song URL (Optional if file selected)
+                <input
+                  value={songUrl}
+                  onChange={(e) => setSongUrl(e.target.value)}
+                  type="url"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="https://.../song.mp3"
+                />
+              </label>
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Hint / Description (Optional)
-              <input
-                value={photoHint}
-                onChange={(e) => setPhotoHint(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="Our best movie date click"
-              />
-            </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Display Order (Optional)
+                <input
+                  value={songOrder}
+                  onChange={(e) => setSongOrder(e.target.value)}
+                  type="number"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="1"
+                />
+              </label>
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Frame Caption (Optional)
-              <input
-                value={photoCaption}
-                onChange={(e) => setPhotoCaption(e.target.value)}
-                type="text"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="Hold this moment forever"
-              />
-            </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Play Location
+                <select
+                  value={songPlacement}
+                  onChange={(e) => setSongPlacement(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm font-medium text-[#5f2616] outline-none focus:border-[#ca6642]"
+                >
+                  <option value="both">Journey + Songs Page</option>
+                  <option value="songs_only">Songs Page Only</option>
+                </select>
+              </label>
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Photo URL (Optional if file selected)
-              <input
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                type="url"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="https://.../photo.jpg"
-              />
-            </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Upload Audio File (Optional)
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => setSongFile(e.target.files?.[0] || null)}
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] file:mr-3 file:rounded-full file:border-0 file:bg-[#ffe3d6] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#8f4027]"
+                />
+              </label>
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Display Order (Optional)
-              <input
-                value={photoOrder}
-                onChange={(e) => setPhotoOrder(e.target.value)}
-                type="number"
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
-                placeholder="1"
-              />
-            </label>
+              <button
+                type="submit"
+                disabled={savingSong}
+                className="mt-5 rounded-full bg-[#bb4e2d] px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#a84325] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {savingSong ? "Saving Song..." : "Save Song"}
+              </button>
+            </form>
+          )}
 
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
-              Upload Image File (Optional)
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] file:mr-3 file:rounded-full file:border-0 file:bg-[#ffe3d6] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#8f4027]"
-              />
-            </label>
-
-            <button
-              type="submit"
-              disabled={savingPhoto}
-              className="mt-5 rounded-full bg-[#bb4e2d] px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#a84325] disabled:cursor-not-allowed disabled:opacity-70"
+          {showPhotos && (
+            <form
+              onSubmit={savePhoto}
+              className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5"
             >
-              {savingPhoto ? "Saving Photo..." : "Save Photo"}
-            </button>
-          </form>
+              <h3 className="text-lg font-semibold text-[#6f2d1d]">Add Photo</h3>
+              <p className="mt-1 text-xs text-[#90503b]">URL ya image upload se gallery update ho jayegi.</p>
+
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Photo Title
+                <input
+                  value={photoTitle}
+                  onChange={(e) => setPhotoTitle(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="Temple Day Smile"
+                  required
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Vibe (Optional)
+                <input
+                  value={photoVibe}
+                  onChange={(e) => setPhotoVibe(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="Golden Hour"
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Hint / Description (Optional)
+                <input
+                  value={photoHint}
+                  onChange={(e) => setPhotoHint(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="Our best movie date click"
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Frame Caption (Optional)
+                <input
+                  value={photoCaption}
+                  onChange={(e) => setPhotoCaption(e.target.value)}
+                  type="text"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="Hold this moment forever"
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Photo URL (Optional if file selected)
+                <input
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  type="url"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="https://.../photo.jpg"
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Display Order (Optional)
+                <input
+                  value={photoOrder}
+                  onChange={(e) => setPhotoOrder(e.target.value)}
+                  type="number"
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                  placeholder="1"
+                />
+              </label>
+
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a4d33]">
+                Upload Image File (Optional)
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                  className="mt-2 w-full rounded-xl border border-[#e8c2b0] bg-white px-3 py-2 text-sm text-[#5f2616] file:mr-3 file:rounded-full file:border-0 file:bg-[#ffe3d6] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#8f4027]"
+                />
+              </label>
+
+              <button
+                type="submit"
+                disabled={savingPhoto}
+                className="mt-5 rounded-full bg-[#bb4e2d] px-5 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-[#a84325] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {savingPhoto ? "Saving Photo..." : "Save Photo"}
+              </button>
+            </form>
+          )}
         </div>
 
-        <div className="mt-8 grid gap-5 lg:grid-cols-2">
-          <article className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5">
-            <h3 className="text-lg font-semibold text-[#6f2d1d]">Manage Songs</h3>
-            {loadingSongs ? (
-              <p className="mt-3 text-sm text-[#85503d]">Loading songs...</p>
-            ) : songs.length === 0 ? (
-              <p className="mt-3 text-sm text-[#85503d]">Abhi tak koi song add nahi hua.</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {songs.map((song) => (
-                  <div
-                    key={song.id}
-                    className="rounded-xl border border-[#edd0c4] bg-white p-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold text-[#6f2d1d]">
-                          {song.title}
-                        </p>
-                        <p className="text-xs text-[#8d5441]">
-                          {song.artist || "Unknown Artist"}
-                        </p>
+        <div className={`mt-8 grid gap-5 ${showSongs && showPhotos ? "lg:grid-cols-2" : ""}`}>
+          {showSongs && (
+            <article className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5">
+              <h3 className="text-lg font-semibold text-[#6f2d1d]">Manage Songs</h3>
+              {loadingSongs ? (
+                <p className="mt-3 text-sm text-[#85503d]">Loading songs...</p>
+              ) : songs.length === 0 ? (
+                <p className="mt-3 text-sm text-[#85503d]">Abhi tak koi song add nahi hua.</p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {songs.map((song) => (
+                    <div
+                      key={song.id}
+                      className="rounded-xl border border-[#edd0c4] bg-white p-3"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-[#6f2d1d]">
+                            {song.title}
+                          </p>
+                          <p className="text-xs text-[#8d5441]">
+                            {song.artist || "Unknown Artist"}
+                          </p>
+                          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9a5a45]">
+                            Order: {song.order === FALLBACK_ORDER ? "Auto" : song.order} |{" "}
+                            {song.playInJourney === false ? "Songs Only" : "Journey + Songs"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              editingSongId === song.id
+                                ? cancelEditSongSettings()
+                                : startEditSongSettings(song)
+                            }
+                            className="rounded-full border border-[#d17c5d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2]"
+                          >
+                            {editingSongId === song.id ? "Cancel Edit" : "Edit"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteSong(song)}
+                            disabled={deletingId === song.id}
+                            className="rounded-full border border-[#d17c5d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2] disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            {deletingId === song.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteSong(song)}
-                        disabled={deletingId === song.id}
-                        className="rounded-full border border-[#d17c5d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2] disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {deletingId === song.id ? "Deleting..." : "Delete"}
-                      </button>
-                    </div>
-                    <audio controls src={song.src} className="mt-3 w-full" preload="none" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </article>
 
-          <article className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5">
-            <h3 className="text-lg font-semibold text-[#6f2d1d]">Manage Photos</h3>
-            {loadingPhotos ? (
-              <p className="mt-3 text-sm text-[#85503d]">Loading photos...</p>
-            ) : photos.length === 0 ? (
-              <p className="mt-3 text-sm text-[#85503d]">Abhi tak koi photo add nahi hui.</p>
-            ) : (
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className="rounded-xl border border-[#edd0c4] bg-white p-3"
-                  >
-                    <div className="h-28 overflow-hidden rounded-lg bg-[#ffe8db]">
-                      {photo.imageUrl ? (
-                        <img
-                          src={photo.imageUrl}
-                          alt={photo.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs font-semibold uppercase tracking-[0.16em] text-[#9a5c45]">
-                          No Preview
+                      {editingSongId === song.id && (
+                        <div className="mt-3 rounded-xl border border-[#efcfbf] bg-[#fff7f2] p-3">
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <label className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#935039]">
+                              Display Order
+                              <input
+                                type="number"
+                                value={editingSongOrder}
+                                onChange={(e) => setEditingSongOrder(e.target.value)}
+                                className="mt-1 w-full rounded-lg border border-[#e6c1af] bg-white px-2 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                                placeholder="1"
+                              />
+                            </label>
+                            <label className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#935039]">
+                              Play Location
+                              <select
+                                value={editingSongPlacement}
+                                onChange={(e) => setEditingSongPlacement(e.target.value)}
+                                className="mt-1 w-full rounded-lg border border-[#e6c1af] bg-white px-2 py-2 text-sm text-[#5f2616] outline-none focus:border-[#ca6642]"
+                              >
+                                <option value="both">Journey + Songs Page</option>
+                                <option value="songs_only">Songs Page Only</option>
+                              </select>
+                            </label>
+                          </div>
+
+                          <div className="mt-3 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => saveSongSettings(song.id)}
+                              disabled={savingSongSettingsId === song.id}
+                              className="rounded-full bg-[#bb4e2d] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#a84325] disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                              {savingSongSettingsId === song.id ? "Saving..." : "Save Settings"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditSongSettings}
+                              className="rounded-full border border-[#d17c5d] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2]"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       )}
+
+                      <audio controls src={song.src} className="mt-3 w-full" preload="none" />
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-[#6f2d1d]">
-                      {photo.title}
-                    </p>
-                    <p className="mt-1 text-xs text-[#8d5441]">
-                      {photo.vibe || "Memory Vibe"}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => deletePhoto(photo)}
-                      disabled={deletingId === photo.id}
-                      className="mt-2 rounded-full border border-[#d17c5d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2] disabled:cursor-not-allowed disabled:opacity-70"
+                  ))}
+                </div>
+              )}
+            </article>
+          )}
+
+          {showPhotos && (
+            <article className="rounded-2xl border border-[#f0cdbf] bg-[#fff9f5] p-4 sm:p-5">
+              <h3 className="text-lg font-semibold text-[#6f2d1d]">Manage Photos</h3>
+              {loadingPhotos ? (
+                <p className="mt-3 text-sm text-[#85503d]">Loading photos...</p>
+              ) : photos.length === 0 ? (
+                <p className="mt-3 text-sm text-[#85503d]">Abhi tak koi photo add nahi hui.</p>
+              ) : (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {photos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="rounded-xl border border-[#edd0c4] bg-white p-3"
                     >
-                      {deletingId === photo.id ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </article>
+                      <div className="h-28 overflow-hidden rounded-lg bg-[#ffe8db]">
+                        {photo.imageUrl ? (
+                          <img
+                            src={photo.imageUrl}
+                            alt={photo.title}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs font-semibold uppercase tracking-[0.16em] text-[#9a5c45]">
+                            No Preview
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm font-semibold text-[#6f2d1d]">
+                        {photo.title}
+                      </p>
+                      <p className="mt-1 text-xs text-[#8d5441]">
+                        {photo.vibe || "Memory Vibe"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => deletePhoto(photo)}
+                        disabled={deletingId === photo.id}
+                        className="mt-2 rounded-full border border-[#d17c5d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f3d24] transition hover:bg-[#ffe0d2] disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        {deletingId === photo.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+          )}
         </div>
       </div>
     </section>

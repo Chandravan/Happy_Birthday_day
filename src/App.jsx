@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Link, NavLink, Route, Routes } from "react-router-dom";
+import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -85,6 +85,7 @@ function toSortedSongList(snapshot) {
         title: data.title || "Untitled Song",
         src,
         artist: data.artist || "",
+        playInJourney: data.playInJourney !== false,
         order: Number.isFinite(Number(data.order))
           ? Number(data.order)
           : fallbackOrder,
@@ -178,11 +179,9 @@ function Header({ isUnlocked, remaining, user, onLogout }) {
           </p>
         )}
 
-        <nav className="nav-scroll-row -mx-1 flex w-full gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-          {navLinks.map((link) => {
-            const locked =
-              !isUnlocked && link.to !== "/" && link.to !== "/admin";
-            return (
+        {isUnlocked && (
+          <nav className="nav-scroll-row -mx-1 flex w-full gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+            {navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -191,17 +190,16 @@ function Header({ isUnlocked, remaining, user, onLogout }) {
                   [
                     "romance-nav-link shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm",
                     isActive ? "is-active" : "",
-                    locked ? "is-locked" : "",
                   ].join(" ")
                 }
               >
-                {locked ? `${link.label} (Locked)` : link.label}
+                {link.label}
               </NavLink>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
+        )}
 
-        {user && (
+        {isUnlocked && user && (
           <div className="flex w-full items-center justify-end sm:w-auto">
             <button
               type="button"
@@ -228,8 +226,7 @@ function LockedRoutePage({ remaining }) {
           Almost There
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
-          Ye pages birthday midnight pe unlock honge. Tab tak home pe teaser
-          experience live hai.
+          Surprise content birthday midnight ke baad hi dikhega.
         </p>
         <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a4d33]">
           Unlock Time: {birthdayUnlock.displayText}
@@ -270,14 +267,6 @@ function LockedRoutePage({ remaining }) {
           </article>
         </div>
 
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="unlock-love-btn inline-flex rounded-full px-6 py-3 text-sm font-semibold text-white"
-          >
-            Back To Home Teaser
-          </Link>
-        </div>
       </div>
     </section>
   );
@@ -443,6 +432,11 @@ export default function App() {
     return allowedAdminEmails.includes((user.email || "").toLowerCase());
   }, [allowedAdminEmails, user]);
 
+  const journeyTracks = useMemo(
+    () => songTracks.filter((track) => track.playInJourney !== false),
+    [songTracks]
+  );
+
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
@@ -551,101 +545,104 @@ export default function App() {
 
         <div className="relative z-10">
           <Routes>
-            <Route path="/" element={<HomePage profile={coupleProfile} />} />
+            <Route
+              path="/"
+              element={
+                isUnlocked ? (
+                  <HomePage profile={coupleProfile} />
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
+              }
+            />
             <Route
               path="/journey"
               element={
-                <ProtectedRoutePage
-                  user={user}
-                  authLoading={authLoading}
-                  isSigningIn={isSigningIn}
-                  onLogin={handleGoogleLogin}
-                  authError={authError}
-                >
-                  {isUnlocked ? (
-                    <JourneyPage
-                      moments={timelineMoments}
-                      tracks={songTracks}
-                    />
-                  ) : (
-                    <LockedRoutePage remaining={remaining} />
-                  )}
-                </ProtectedRoutePage>
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
+                    <JourneyPage moments={timelineMoments} tracks={journeyTracks} />
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
               }
             />
             <Route
               path="/reasons"
               element={
-                <ProtectedRoutePage
-                  user={user}
-                  authLoading={authLoading}
-                  isSigningIn={isSigningIn}
-                  onLogin={handleGoogleLogin}
-                  authError={authError}
-                >
-                  {isUnlocked ? (
-                    <ReasonsPage
-                      reasons={loveReasons}
-                      profile={coupleProfile}
-                    />
-                  ) : (
-                    <LockedRoutePage remaining={remaining} />
-                  )}
-                </ProtectedRoutePage>
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
+                    <ReasonsPage reasons={loveReasons} profile={coupleProfile} />
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
               }
             />
             <Route
               path="/songs"
               element={
-                <ProtectedRoutePage
-                  user={user}
-                  authLoading={authLoading}
-                  isSigningIn={isSigningIn}
-                  onLogin={handleGoogleLogin}
-                  authError={authError}
-                >
-                  {isUnlocked ? (
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
                     <SongsPage tracks={songTracks} profile={coupleProfile} />
-                  ) : (
-                    <LockedRoutePage remaining={remaining} />
-                  )}
-                </ProtectedRoutePage>
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
               }
             />
             <Route
               path="/memories"
               element={
-                <ProtectedRoutePage
-                  user={user}
-                  authLoading={authLoading}
-                  isSigningIn={isSigningIn}
-                  onLogin={handleGoogleLogin}
-                  authError={authError}
-                >
-                  {isUnlocked ? (
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
                     <MemoriesPage frames={photoFrames} />
-                  ) : (
-                    <LockedRoutePage remaining={remaining} />
-                  )}
-                </ProtectedRoutePage>
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
               }
             />
             <Route
               path="/future"
               element={
-                <ProtectedRoutePage
-                  user={user}
-                  authLoading={authLoading}
-                  isSigningIn={isSigningIn}
-                  onLogin={handleGoogleLogin}
-                  authError={authError}
-                >
-                  {isUnlocked ? (
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
                     <FuturePage plans={futurePlans} promises={futurePromises} />
-                  ) : (
-                    <LockedRoutePage remaining={remaining} />
-                  )}
-                </ProtectedRoutePage>
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
               }
             />
             <Route
@@ -660,7 +657,23 @@ export default function App() {
                   requireAdmin={true}
                   isAdmin={isAdmin}
                 >
-                  <AdminPanelPage user={user} />
+                  <AdminPanelPage user={user} mode="all" />
+                </ProtectedRoutePage>
+              }
+            />
+            <Route
+              path="/admin/songs"
+              element={
+                <ProtectedRoutePage
+                  user={user}
+                  authLoading={authLoading}
+                  isSigningIn={isSigningIn}
+                  onLogin={handleGoogleLogin}
+                  authError={authError}
+                  requireAdmin={true}
+                  isAdmin={isAdmin}
+                >
+                  <AdminPanelPage user={user} mode="songs" />
                 </ProtectedRoutePage>
               }
             />
