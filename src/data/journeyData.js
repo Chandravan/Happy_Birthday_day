@@ -117,14 +117,14 @@ export const timelineMoments = [
   },
   {
     date: "Chapter 07 Moment",
-    title: "Temple Visit and Long Travel",
+    title: "Our First Temple Visit — Where Hearts and Prayers Aligned",
     place: "Mandir and Long Route Together",
     note: "For the full story, stay tuned with us!",
     chapter: "Chapter 08",
   },
   {
     date: "Chapter 08 Moment",
-    title: "Movie Date Night",
+    title: "First Movie Date ",
     place: "Theater Date",
     note: "For the full story, stay tuned with us!",
     chapter: "Chapter 09",
