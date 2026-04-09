@@ -17,17 +17,41 @@ const memoryDetails = [
 ];
 
 export const heartNotes = [
+  // Chapter 01 – Beginning
   "That first day, I didn’t know you’d become my whole story.",
-  "Even in silence, my heart kept choosing you.",
-  "Fate wrote something unexpected… and beautiful for us.",
-  "Some bonds restart stronger, and ours proved it.",
-  "That day, friendship turned into something my heart always wanted.",
-  "Loving you daily became my favorite routine.",
-  "Every journey with you feels like a blessing I never asked for but got.",
-  "Even a simple movie night felt like a dream with you.",
-  "Truth wasn’t easy, but loving you was always worth it.",
-  "With you, even a trip became a lifetime memory.",
-  "Your special day… but somehow, you became my biggest gift.",
+
+  // Chapter 02 – Silence & Ego
+  "Even in silence, my heart somehow stayed around you.",
+
+  // Chapter 03 – Her Heartbreak (you not involved)
+  "I wasn’t there… but somewhere, your pain still reached my heart.",
+
+  // Chapter 04 – Healing Phase
+  "While you were healing, I was just a stranger… waiting without knowing.",
+
+  // Chapter 05 – Talks Begin
+  "Somewhere between random talks, you started feeling like home.",
+
+  // Chapter 06 – Besties → Partners
+  "That day, friendship quietly turned into everything my heart wanted.",
+
+  // Chapter 07 – Couple Days
+  "Loving you daily became the simplest and happiest part of my life.",
+
+  // Chapter 08 – Temple & Travel
+  "Every journey with you felt like a blessing written just for us.",
+
+  // Chapter 09 – Movie Date
+  "Even the smallest moments with you felt like scenes from a dream.",
+
+  // Chapter 10 – Hard Truth
+  "Truth wasn’t easy, but choosing you was always worth it.",
+
+  // Chapter 11 – Trip
+  "With you, even a few days felt like memories for a lifetime.",
+
+  // Chapter 12 – Birthday Finale
+  "It was your special day… but somehow, you became my greatest gift.",
 ];
 
 function ChapterControls({

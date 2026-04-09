@@ -81,65 +81,74 @@ export const timelineMoments = [
   },
   {
     date: "Semester Break",
-    title: "Unexpected Proposal Twist",
+    title: "Some Twist",
     place: "A Sudden Turn",
      note: "For the full story, stay tuned with us!",
     chapter: "Chapter 03",
   },
   {
+    date: "Semester Break",
+    title: "When She Was Healing… And I Was Nowhere",
+    place: "A Sudden Turn",
+     note: "For the full story, stay tuned with us!",
+    chapter: "Chapter 04",
+  },
+  
+  {
     date: "New Semester Start",
     title: "Back to Talks, Back to Us",
     place: "Late Chats and Bestie Vibes",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 04",
+    chapter: "Chapter 05",
   },
   {
     date: "02 May 2025",
     title: "Besties to Partners",
     place: "The Real Turning Point",
     note: "For the full story, stay tuned with us!",
+    chapter: "chapter 06"
   },
   {
     date: "After We Became Partners",
     title: "Official Couple Days",
     place: "Everyday Love Era",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 06",
+    chapter: "Chapter 07",
   },
   {
     date: "Chapter 07 Moment",
     title: "Temple Visit and Long Travel",
     place: "Mandir and Long Route Together",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 07",
+    chapter: "Chapter 08",
   },
   {
     date: "Chapter 08 Moment",
     title: "Movie Date Night",
     place: "Theater Date",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 08",
+    chapter: "Chapter 09",
   },
   {
     date: "Chapter 09 Moment",
     title: "Some Past Hard Truth",
     place: "An Honest Conversation",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 09",
+    chapter: "Chapter 10",
   },
   {
     date: "Chapter 10 Moment",
     title: "First Trip Together",
     place: "5 Days in Varanasi",
     note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 10",
+    chapter: "Chapter 11",
   },
   {
     date: "10 Apr 2026",
     title: "Birthday Finale",
     place: "A Day Made for Anustha",
      note: "For the full story, stay tuned with us!",
-    chapter: "Chapter 11",
+    chapter: "Chapter 12",
   },
 ];
 
@@ -192,17 +201,25 @@ export const memoryFrames = [
 ];
 
 export const futurePromises = [
-  "I will keep celebrating your wins louder than my own.",
-  "I will listen even on difficult days, not just easy ones.",
-  "I will keep building a future where you always feel secure and loved.",
-  "I will never let routine make our love feel ordinary.",
+  "I will celebrate your wins like they are the reason my world shines brighter.",
+  "Even on the hardest days, I will choose to listen, understand, and stay.",
+  "I will build a life where you never have to question if you are loved.",
+  "No matter how routine life gets, I will keep finding new ways to fall for you again.",
+  "I will always save the last bite for you… even when I really want it.",
+  "I will remind you how beautiful you are, especially on the days you forget.",
+  "I will never let you sleep upset, even if it means long late-night talks.",
+  "I will keep annoying you with my love, just enough to make you smile.",
 ];
 
 export const futurePlans = [
-  "A full-day date where phones stay away and time slows down.",
-  "A mini trip with sunsets, coffee, and endless conversations.",
-  "A memory scrapbook where every month gets one page.",
-  "A yearly birthday tradition that becomes our signature ritual.",
+  "A full day where it is just us, no phones, no distractions… just moments that stay forever.",
+  "A quiet trip with sunsets, long walks, and conversations that never feel enough.",
+  "A scrapbook of us, where every month becomes a memory we can relive.",
+  "A birthday tradition so special that every year feels like a celebration of you and us.",
+  "Random midnight walks where we talk about everything and nothing.",
+  "Cooking together and making a mess… but laughing through it.",
+  "A playlist of our songs that grows with every new memory.",
+  "Simple days where we do nothing… but it still feels like everything.",
 ];
 
 export const loveReasons = [

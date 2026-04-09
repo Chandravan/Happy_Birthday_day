@@ -35,7 +35,7 @@ export default function HomePage({ profile }) {
     {
       id: "spark",
       title: "First Spark",
-      line: "Us raat ka hi changed everything for me.",
+      line: "Us raat sirf baat nahi hui thi… meri zindagi ne ek naya mod le liya tha, aur us mod par tu khadi thi.",
       left: 12,
       top: 68,
       size: 16,
@@ -43,7 +43,7 @@ export default function HomePage({ profile }) {
     {
       id: "laugh",
       title: "Your Laugh",
-      line: "Teri hasi ne mere bad days ko bhi bright bana diya.",
+      line: "Teri hasi… sirf hasi nahi hai, woh wajah hai jisse meri har subah shuru hoti hai aur har gham khatam.",
       left: 28,
       top: 36,
       size: 14,
@@ -51,7 +51,7 @@ export default function HomePage({ profile }) {
     {
       id: "care",
       title: "Your Care",
-      line: "Tu poochti hai 'khana khaya?' and I feel at home.",
+      line: "Duniya ne kabhi itna nahi poocha jitna tu poochti hai… aur shayad isi liye tu meri duniya ban gayi.",
       left: 44,
       top: 58,
       size: 15,
@@ -59,7 +59,7 @@ export default function HomePage({ profile }) {
     {
       id: "trust",
       title: "Trust",
-      line: "Har phase me humne trust ko hold kiya, and we grew.",
+      line: "Rishte kismat se milte hain… par unhe nibhane ke liye jo himmat chahiye, woh humne ek dusre se seekhi hai.",
       left: 58,
       top: 30,
       size: 14,
@@ -67,7 +67,7 @@ export default function HomePage({ profile }) {
     {
       id: "comfort",
       title: "Comfort",
-      line: "Tere saath silence bhi conversation jaisa lagta hai.",
+      line: "Tere saath rehkar mujhe kisi aur cheez ki zarurat nahi padti… kyunki tu hi mera sukoon hai.",
       left: 72,
       top: 62,
       size: 16,
@@ -75,7 +75,7 @@ export default function HomePage({ profile }) {
     {
       id: "forever",
       title: "Forever",
-      line: "I do not just love you, I choose you every single day.",
+      line: "Yeh pyaar sirf aaj tak nahi… jab tak saansein chalti rahengi, tab tak main sirf tera hi rahunga.",
       left: 86,
       top: 38,
       size: 17,
