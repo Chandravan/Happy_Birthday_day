@@ -3,6 +3,8 @@ export const coupleProfile = {
   partnerName: "Anustha",
   partnerNickname: "Anustha",
   relationshipStart: "2025-05-02T00:00:00+05:30",
+  yourPhoto: "/images/him-placeholder.svg",
+  partnerPhoto: "/images/her-placeholder.svg",
 };
 
 export const firstChatSky = {
@@ -220,6 +222,36 @@ export const futurePlans = [
   "Cooking together and making a mess… but laughing through it.",
   "A playlist of our songs that grows with every new memory.",
   "Simple days where we do nothing… but it still feels like everything.",
+];
+
+export const giftsGivenByHim = [
+  {
+    title: "Handwritten Love Letter",
+    detail: "A letter written from heart, folded inside a small memory envelope.",
+  },
+  {
+    title: "Favorite Chocolate Box",
+    detail: "Her comfort chocolates with a tiny note hidden in the pack.",
+  },
+  {
+    title: "Mini Photo Scrap",
+    detail: "A little scrapbook of random moments and inside jokes.",
+  },
+];
+
+export const giftsGivenByHer = [
+  {
+    title: "Custom Bracelet",
+    detail: "A bracelet that carries initials and a forever date.",
+  },
+  {
+    title: "Surprise Diary Note",
+    detail: "A short diary-style note with wishes and pure soft love.",
+  },
+  {
+    title: "Favorite Memory Frame",
+    detail: "A framed photo from one of the most peaceful days together.",
+  },
 ];
 
 export const loveReasons = [

@@ -142,7 +142,7 @@ export default function HomePage({ profile }) {
             A Birthday Gift For {profile.partnerName}
           </p>
 
-          <h1 className="font-script mt-5 text-5xl leading-[0.9] text-[#6a2414] sm:text-7xl md:text-8xl">
+          <h1 className="font-script mt-5 text-[2.7rem] leading-[0.9] text-[#6a2414] sm:text-7xl md:text-8xl">
             Happy Birthday,
             <br />
             {profile.partnerNickname}
@@ -338,7 +338,7 @@ export default function HomePage({ profile }) {
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#9d4f34]">
               Selected Star
             </p>
-            <h3 className="font-script mt-2 text-4xl leading-none text-[#6a2415] sm:text-6xl">
+            <h3 className="font-script mt-2 text-[2.45rem] leading-none text-[#6a2415] sm:text-6xl">
               {activeStar.title}
             </h3>
             <p className="mt-4 text-sm leading-relaxed text-[#6f4034] sm:text-base">

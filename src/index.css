@@ -1469,6 +1469,21 @@
       letter-spacing: 0.24em;
     }
 
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+
+    .nav-scroll-row {
+      scroll-snap-type: x proximity;
+      padding-bottom: 0.35rem;
+    }
+
+    .nav-scroll-row .romance-nav-link {
+      scroll-snap-align: start;
+    }
+
     .romance-nav-link {
       padding: 0.45rem 0.78rem;
       font-size: 11px;
@@ -1493,16 +1508,19 @@
     .unlock-love-btn {
       width: 100%;
       justify-content: center;
+      min-height: 44px;
     }
 
     .journey-float-unlock {
       max-width: none;
       border-radius: 0.95rem;
+      min-height: 46px;
     }
 
     .journey-music-toggle {
       width: 100%;
       justify-content: center;
+      min-height: 44px;
     }
 
     .constellation-progress-box {

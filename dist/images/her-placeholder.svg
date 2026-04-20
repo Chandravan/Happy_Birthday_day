@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" fill="none">
+  <defs>
+    <linearGradient id="bgHer" x1="102" y1="52" x2="762" y2="830" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffd8e7"/>
+      <stop offset="1" stop-color="#db779f"/>
+    </linearGradient>
+    <radialGradient id="glowHer" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(684 214) rotate(133.3) scale(431.7)">
+      <stop stop-color="#fff6fb" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fff6fb" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="900" height="900" rx="68" fill="url(#bgHer)"/>
+  <rect width="900" height="900" rx="68" fill="url(#glowHer)"/>
+
+  <circle cx="450" cy="350" r="164" fill="#fff6fb" fill-opacity="0.9"/>
+  <circle cx="450" cy="368" r="138" fill="#eca3c0" fill-opacity="0.6"/>
+
+  <path d="M214 734c39-143 130-219 236-219s197 76 236 219" fill="#fff6fb" fill-opacity="0.9"/>
+  <path d="M260 734c33-116 104-179 190-179s157 63 190 179" fill="#e892b4" fill-opacity="0.6"/>
+
+  <rect x="310" y="74" width="280" height="64" rx="32" fill="#fff6fb" fill-opacity="0.9"/>
+  <text x="450" y="116" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="700" letter-spacing="4" fill="#873059">HER</text>
+</svg>

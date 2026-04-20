@@ -54,7 +54,7 @@ export default function MemoriesPage({ frames }) {
           <p className="tracking-love text-xs uppercase text-[#93452a]">
             Memory Gallery
           </p>
-          <h2 className="font-script mt-3 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+          <h2 className="font-script mt-3 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
             Our Sweetest Frames
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">

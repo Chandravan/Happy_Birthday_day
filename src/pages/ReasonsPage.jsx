@@ -6,7 +6,7 @@ export default function ReasonsPage({ reasons, profile }) {
           <p className="tracking-love text-xs uppercase text-[#93452a]">
             Why I Love You
           </p>
-          <h2 className="font-script mt-3 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+          <h2 className="font-script mt-3 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
             12 Reasons For Anustha
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">

@@ -204,7 +204,7 @@ export default function SongsPage({ tracks = [], profile }) {
       <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
         <div className="countdown-lock-card relative overflow-hidden rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-10">
           <p className="tracking-love text-xs uppercase text-[#93452a]">Song Room</p>
-          <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+          <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
             No Songs Yet
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -220,7 +220,7 @@ export default function SongsPage({ tracks = [], profile }) {
       <div className="countdown-lock-card relative overflow-hidden rounded-[1.7rem] p-5 sm:rounded-[2.1rem] sm:p-10">
         <header>
           <p className="tracking-love text-xs uppercase text-[#93452a]">Dedicated Song Room</p>
-          <h2 className="font-script mt-3 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+          <h2 className="font-script mt-3 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
             Our Playlist
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -230,7 +230,7 @@ export default function SongsPage({ tracks = [], profile }) {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
           <article className="rounded-[1.5rem] border border-[#efc9b8] bg-[#fff6f0] p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c5136]">Now Playing</p>
               <span className="rounded-full border border-[#eabca7] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8d4129]">
                 {activeIndex + 1}/{validTracks.length}
@@ -238,7 +238,7 @@ export default function SongsPage({ tracks = [], profile }) {
             </div>
 
             <div className="mt-5 flex items-center gap-4">
-              <div className="relative h-20 w-20 shrink-0 rounded-full border border-[#e6b6a0] bg-gradient-to-br from-[#ffd4bd] via-[#ffbda1] to-[#d66546]">
+              <div className="relative h-16 w-16 shrink-0 rounded-full border border-[#e6b6a0] bg-gradient-to-br from-[#ffd4bd] via-[#ffbda1] to-[#d66546] sm:h-20 sm:w-20">
                 <div className="absolute inset-3 rounded-full border border-white/70 bg-[#fff3ea]" />
                 <div className="absolute inset-[42%] rounded-full bg-[#9a4328]" />
               </div>
@@ -262,25 +262,25 @@ export default function SongsPage({ tracks = [], profile }) {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2">
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <button
                 type="button"
                 onClick={() => void playPrevious()}
-                className="rounded-full border border-[#d1896c] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8b3d24] transition hover:bg-[#ffe8dc]"
+                className="flex w-full items-center justify-center rounded-full border border-[#d1896c] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8b3d24] transition hover:bg-[#ffe8dc] sm:w-auto"
               >
                 Prev
               </button>
               <button
                 type="button"
                 onClick={() => void togglePlay()}
-                className="rounded-full bg-[#ba4d2d] px-6 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#a64326]"
+                className="flex w-full items-center justify-center rounded-full bg-[#ba4d2d] px-6 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#a64326] sm:w-auto"
               >
                 {isLoading ? "Loading..." : isPlaying ? "Pause" : "Play"}
               </button>
               <button
                 type="button"
                 onClick={() => void playNext()}
-                className="rounded-full border border-[#d1896c] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8b3d24] transition hover:bg-[#ffe8dc]"
+                className="flex w-full items-center justify-center rounded-full border border-[#d1896c] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#8b3d24] transition hover:bg-[#ffe8dc] sm:w-auto"
               >
                 Next
               </button>
@@ -295,7 +295,7 @@ export default function SongsPage({ tracks = [], profile }) {
 
           <article className="rounded-[1.5rem] border border-[#efc9b8] bg-[#fff8f3] p-5 sm:p-6">
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c5136]">Playlist Queue</p>
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 max-h-[55vh] space-y-2 overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
               {validTracks.map((track, index) => (
                 <button
                   key={track.id || `${track.title}-${index}`}

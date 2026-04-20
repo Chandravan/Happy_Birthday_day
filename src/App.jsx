@@ -12,6 +12,8 @@ import {
   coupleProfile,
   futurePlans,
   futurePromises,
+  giftsGivenByHer,
+  giftsGivenByHim,
   journeyChapterMusic,
   loveReasons,
   memoryFrames,
@@ -19,6 +21,7 @@ import {
 } from "./data/journeyData";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import FuturePage from "./pages/FuturePage";
+import GiftsPage from "./pages/GiftsPage";
 import HomePage from "./pages/HomePage";
 import JourneyPage from "./pages/JourneyPage";
 import MemoriesPage from "./pages/MemoriesPage";
@@ -30,6 +33,7 @@ const navLinks = [
   { label: "Home", to: "/" },
   { label: "Journey", to: "/journey" },
   { label: "Songs", to: "/songs" },
+  { label: "Gifts", to: "/gifts" },
   { label: "Reasons", to: "/reasons" },
   { label: "Memories", to: "/memories" },
   { label: "Future", to: "/future" },
@@ -125,6 +129,53 @@ function toSortedPhotoList(snapshot) {
     });
 }
 
+function toSortedGiftList(snapshot) {
+  const fallbackOrder = Number.MAX_SAFE_INTEGER;
+
+  return snapshot.docs
+    .map((docSnap) => {
+      const data = docSnap.data() || {};
+
+      return {
+        id: docSnap.id,
+        title: data.title || "Untitled Gift",
+        detail: data.detail || "",
+        givenBy: data.givenBy === "him" ? "him" : "her",
+        imageUrl: data.imageUrl || "",
+        storagePath: data.storagePath || "",
+        order: Number.isFinite(Number(data.order))
+          ? Number(data.order)
+          : fallbackOrder,
+        createdAt: data.createdAt?.toMillis?.() || 0,
+      };
+    })
+    .sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.createdAt - b.createdAt;
+    });
+}
+
+const fallbackGiftItems = [
+  ...giftsGivenByHer.map((gift, index) => ({
+    id: `fallback-her-${index}`,
+    title: gift.title,
+    detail: gift.detail,
+    givenBy: "her",
+    imageUrl: gift.imageUrl || "",
+    order: index,
+    createdAt: index,
+  })),
+  ...giftsGivenByHim.map((gift, index) => ({
+    id: `fallback-him-${index}`,
+    title: gift.title,
+    detail: gift.detail,
+    givenBy: "him",
+    imageUrl: gift.imageUrl || "",
+    order: index,
+    createdAt: index,
+  })),
+];
+
 function FloatingOrbs() {
   const orbs = useMemo(
     () =>
@@ -165,7 +216,7 @@ function Header({ isUnlocked, remaining, user, onLogout }) {
           <p className="tracking-love text-xs uppercase text-[#98482d]">
             Birthday Surprise
           </p>
-          <h1 className="font-display mt-1 text-[1.6rem] leading-none text-[#6f2a19] sm:mt-0 sm:text-3xl">
+          <h1 className="font-display mt-1 text-[1.35rem] leading-tight text-[#6f2a19] sm:mt-0 sm:text-3xl">
             {coupleProfile.yourName} x {coupleProfile.partnerName}
           </h1>
         </div>
@@ -222,7 +273,7 @@ function LockedRoutePage({ remaining }) {
         <p className="tracking-love text-xs uppercase text-[#93452a]">
           Romantic Countdown
         </p>
-        <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+        <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
           Almost There
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -279,7 +330,7 @@ function AuthLoadingPage() {
         <p className="tracking-love text-xs uppercase text-[#93452a]">
           Authentication Check
         </p>
-        <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+        <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
           Hold On
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -297,7 +348,7 @@ function AuthRequiredPage({ onLogin, isSigningIn, authError }) {
         <p className="tracking-love text-xs uppercase text-[#93452a]">
           Private Love Space
         </p>
-        <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+        <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
           Login Required
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -333,7 +384,7 @@ function FirebaseSetupPage() {
         <p className="tracking-love text-xs uppercase text-[#93452a]">
           Firebase Setup Needed
         </p>
-        <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+        <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
           Add .env Keys
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -352,7 +403,7 @@ function AdminAccessDeniedPage() {
         <p className="tracking-love text-xs uppercase text-[#93452a]">
           Admin Access Required
         </p>
-        <h2 className="font-script mt-4 text-5xl leading-[0.9] text-[#672415] sm:text-7xl">
+        <h2 className="font-script mt-4 text-[2.65rem] leading-[0.9] text-[#672415] sm:text-7xl">
           Access Denied
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#6d3d30] sm:text-base">
@@ -407,6 +458,7 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [songTracks, setSongTracks] = useState(journeyChapterMusic);
   const [photoFrames, setPhotoFrames] = useState(memoryFrames);
+  const [giftItems, setGiftItems] = useState(fallbackGiftItems);
 
   const previewOverride = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -437,6 +489,30 @@ export default function App() {
     [songTracks]
   );
 
+  const giftsFromHer = useMemo(
+    () =>
+      giftItems
+        .filter((gift) => gift.givenBy === "her")
+        .map((gift) => ({
+          title: gift.title,
+          detail: gift.detail,
+          imageUrl: gift.imageUrl || "",
+        })),
+    [giftItems]
+  );
+
+  const giftsFromHim = useMemo(
+    () =>
+      giftItems
+        .filter((gift) => gift.givenBy === "him")
+        .map((gift) => ({
+          title: gift.title,
+          detail: gift.detail,
+          imageUrl: gift.imageUrl || "",
+        })),
+    [giftItems]
+  );
+
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
@@ -460,6 +536,7 @@ export default function App() {
     if (!db || !isFirebaseConfigured) {
       setSongTracks(journeyChapterMusic);
       setPhotoFrames(memoryFrames);
+      setGiftItems(fallbackGiftItems);
       return undefined;
     }
 
@@ -481,9 +558,19 @@ export default function App() {
       () => setPhotoFrames(memoryFrames),
     );
 
+    const giftsUnsubscribe = onSnapshot(
+      collection(db, "gifts"),
+      (snapshot) => {
+        const gifts = toSortedGiftList(snapshot);
+        setGiftItems(gifts.length > 0 ? gifts : fallbackGiftItems);
+      },
+      () => setGiftItems(fallbackGiftItems),
+    );
+
     return () => {
       songsUnsubscribe();
       photosUnsubscribe();
+      giftsUnsubscribe();
     };
   }, []);
 
@@ -603,6 +690,28 @@ export default function App() {
                     authError={authError}
                   >
                     <SongsPage tracks={songTracks} profile={coupleProfile} />
+                  </ProtectedRoutePage>
+                ) : (
+                  <LockedRoutePage remaining={remaining} />
+                )
+              }
+            />
+            <Route
+              path="/gifts"
+              element={
+                isUnlocked ? (
+                  <ProtectedRoutePage
+                    user={user}
+                    authLoading={authLoading}
+                    isSigningIn={isSigningIn}
+                    onLogin={handleGoogleLogin}
+                    authError={authError}
+                  >
+                    <GiftsPage
+                      giftsFromHim={giftsFromHim}
+                      giftsFromHer={giftsFromHer}
+                      profile={coupleProfile}
+                    />
                   </ProtectedRoutePage>
                 ) : (
                   <LockedRoutePage remaining={remaining} />

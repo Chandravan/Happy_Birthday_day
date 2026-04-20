@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" fill="none">
+  <defs>
+    <linearGradient id="bgHim" x1="80" y1="40" x2="760" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffcab3"/>
+      <stop offset="1" stop-color="#e07b58"/>
+    </linearGradient>
+    <radialGradient id="glowHim" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(696 206) rotate(133.3) scale(437.438)">
+      <stop stop-color="#fff0e6" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fff0e6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="900" height="900" rx="68" fill="url(#bgHim)"/>
+  <rect width="900" height="900" rx="68" fill="url(#glowHim)"/>
+
+  <circle cx="450" cy="360" r="155" fill="#fff4ed" fill-opacity="0.9"/>
+  <circle cx="450" cy="370" r="132" fill="#f4a789" fill-opacity="0.6"/>
+
+  <path d="M242 734c24-132 117-203 208-203s184 71 208 203" fill="#fff4ed" fill-opacity="0.9"/>
+  <path d="M280 736c22-103 95-164 170-164s148 61 170 164" fill="#f19b79" fill-opacity="0.6"/>
+
+  <rect x="310" y="74" width="280" height="64" rx="32" fill="#fff3ea" fill-opacity="0.9"/>
+  <text x="450" y="116" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="700" letter-spacing="4" fill="#8d3d24">HIM</text>
+</svg>

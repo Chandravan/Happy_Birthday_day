@@ -125,7 +125,7 @@ function ChapterControls({
               onClick={() => onSelect(idx)}
               disabled={locked}
               className={[
-                "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.17em] transition",
+                "shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.17em] transition",
                 locked
                   ? "cursor-not-allowed border-[#efd5ca] bg-[#fff7f2] text-[#b97b66]"
                   : "border-[#edc2af] bg-[#fff2ea] text-[#8d4129] hover:bg-[#ffe8dc]",
@@ -194,7 +194,7 @@ function MemoryCard({
         {moment.date} | {moment.place}
       </p>
 
-      <p className="font-script mt-5 text-3xl leading-[1.06] text-[#9d4b33] sm:text-5xl">
+      <p className="font-script mt-5 text-[2rem] leading-[1.06] text-[#9d4b33] sm:text-5xl">
         "{note}"
       </p>
 
@@ -465,7 +465,7 @@ export default function JourneyPage({ moments, tracks = journeyChapterMusic }) {
   };
 
   return (
-    <section className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-8 sm:py-10">
+    <section className="relative mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-8 sm:py-10">
       <div className="journey-love-stage relative overflow-hidden rounded-[1.7rem] p-4 sm:rounded-[2.1rem] sm:p-10">
         <div
           className={[
@@ -500,7 +500,7 @@ export default function JourneyPage({ moments, tracks = journeyChapterMusic }) {
           <p className="tracking-love text-xs uppercase text-[#9c4a2f]">
             Our Forever Diary
           </p>
-          <h2 className="font-script mt-3 text-5xl leading-[0.9] text-[#652616] sm:text-7xl md:text-8xl">
+          <h2 className="font-script mt-3 text-[2.65rem] leading-[0.9] text-[#652616] sm:text-7xl md:text-8xl">
             {coupleProfile.yourName}
             <span className="mx-2 inline-block animate-heartbeat text-[#cf4f2d]">
               {"\u2665"}
@@ -637,7 +637,10 @@ export default function JourneyPage({ moments, tracks = journeyChapterMusic }) {
       </div>
 
       {hasNextChapter && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 px-4 sm:bottom-6 sm:px-8">
+        <div
+          className="pointer-events-none fixed inset-x-0 bottom-4 z-40 px-4 sm:bottom-6 sm:px-8"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        >
           <div className="mx-auto flex w-full max-w-7xl justify-center">
             <button
               type="button"
